@@ -3,14 +3,35 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
+
 package minitwitter;
+import javax.swing.JFrame;
+
 
 /**
  *
  * @author andyliang
  */
+
+
 public class MiniTwitter {
 
-   private static MiniTw
+   private static MiniTwitter instance = null;
+   private AdminFrame adminFrame;
+   private MiniTwitter(){
+       adminFrame = new AdminFrame();
+       adminFrame.init();
+       adminFrame.setVisible(true);
+   };
+   public static MiniTwitter getInstance(){
+       if(instance == null){
+           synchronized(MiniTwitter.class){
+               if(instance == null){
+                   instance = new MiniTwitter();
+               }
+           }   
+       }
+       return instance;
+   }
     
 }
