@@ -7,6 +7,7 @@ package minitwitter;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.List;
 import java.util.Map;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
@@ -15,6 +16,7 @@ import javax.swing.JList;
 import javax.swing.JTextField;
 import minitwitter.observerpattern.Observer;
 import minitwitter.observerpattern.User;
+import minitwitter.visitorpattern.UsersManager;
 
 /**
  *
@@ -29,7 +31,9 @@ public class UserViewFrame extends JFrame{
     private JList<String> feedsLv;
    
     private User user;
-    private Map<String, User> allUser;
+    private UsersManager allUser;
+    private AdminFrame adminFrame;
+    
     private DefaultListModel followListModel;
     private DefaultListModel tweetListModel;
     
@@ -38,10 +42,11 @@ public class UserViewFrame extends JFrame{
     private final int BTN1_HEIGHT = 50;
     
             
-    public UserViewFrame(User user, Map users){
+    public UserViewFrame(User user, UsersManager users, AdminFrame adminFrame){
         super();
         this.user = user;
         allUser = users;
+        this.adminFrame = adminFrame;
         this.setTitle(user.toString()+"'s view");
         this.setBounds(200, 200, 400, 600);
         this.getContentPane().setLayout(null);      
@@ -69,13 +74,15 @@ public class UserViewFrame extends JFrame{
         followBtn.addActionListener(new ActionListener(){
             @Override
             public void actionPerformed(ActionEvent e){
-                if(userIdInput.getText().equals("")){
+                //prevent input is nothing, user already in following list, input is user self
+                if(userIdInput.getText().equals("") || user.getFollowing().contains(userIdInput.getText()) 
+                        || userIdInput.getText().equals(user.getId())){
                     return;
                 }
-                System.out.println(allUser.containsKey(userIdInput.getText()));
-                if(allUser.containsKey(userIdInput.getText())){
-                    user.attach(allUser.get(userIdInput.getText()));
-                    addToFollowListView(allUser.get(userIdInput.getText()));
+                if(allUser.hasUser(userIdInput.getText())){
+                    user.addFollowing(userIdInput.getText());
+                    allUser.getUser(userIdInput.getText()).attach(user);
+                    addToFollowListView(allUser.getUser(userIdInput.getText()));
                 }
                 userIdInput.setText("");
             }
@@ -102,6 +109,22 @@ public class UserViewFrame extends JFrame{
         postBtn.setBounds(200, 320, BTN1_WIDTH, BTN1_HEIGHT);
         postBtn.setText("Post Tweet");
         this.getContentPane().add(postBtn);
+        
+        postBtn.addActionListener(new ActionListener(){
+            @Override
+            public void actionPerformed(ActionEvent e){
+                if(tweetInput.getText().equals("")){
+                    return;
+                }
+                String tweet = user.getId() + ": " + tweetInput.getText();
+                user.addTwit(tweet);
+                user.addOwnTwit(tweet);
+                user.notifyObserver();
+                addToFeedsListView(tweet);
+                adminFrame.refreshUsersFrame(user.getFollower());
+                tweetInput.setText("");
+            }
+        });
     }
     
     public void initFeedsLv(){
@@ -109,18 +132,32 @@ public class UserViewFrame extends JFrame{
         feedsLv = new JList<String>();
         feedsLv.setBounds(10, 380, 370, 180);
         feedsLv.setModel(tweetListModel);
+        updateFeedsListView();
         this.getContentPane().add(feedsLv);
     }
     
-    public void updateFollowListView(){
-        for(Observer u : user.getFollower()){
-            User toUser = (User)u;
-            followListModel.addElement(toUser);
+    public void updateFollowListView(){       
+        for(String userId : user.getFollowing()){
+            followListModel.addElement(allUser.getUser(userId));
         }
     }
     
     public void addToFollowListView(User user){
         followListModel.addElement(user);
     }
-        
+    
+    public void updateFeedsListView(){
+        for(String t : user.getAllTwit()){
+            tweetListModel.addElement(t);
+        }
+    }
+    
+    public void addToFeedsListView(String message){
+        tweetListModel.add(0, message);
+    }
+    
+    public void refreshFeeds(){
+        tweetListModel.clear();
+        updateFeedsListView();
+    }       
 }

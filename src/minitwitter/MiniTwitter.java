@@ -13,7 +13,7 @@ import javax.swing.JFrame;
  * @author andyliang
  */
 
-
+//Apply Singleton Pattern: MiniTwitter can only have one instance
 public class MiniTwitter {
 
    private static MiniTwitter instance = null;

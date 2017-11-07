@@ -15,6 +15,7 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.JTree;
@@ -26,7 +27,14 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.MutableTreeNode;
 import minitwitter.compositepattern.Group;
 import minitwitter.compositepattern.TreeComponents;
+import minitwitter.observerpattern.Observer;
 import minitwitter.observerpattern.User;
+import minitwitter.visitorpattern.GroupManager;
+import minitwitter.visitorpattern.PositiveMessageVisitor;
+import minitwitter.visitorpattern.TotalGroupVisitor;
+import minitwitter.visitorpattern.TotalMessageVisitor;
+import minitwitter.visitorpattern.TotalUserVisitor;
+import minitwitter.visitorpattern.UsersManager;
 
 /**
  *
@@ -52,17 +60,19 @@ public class AdminFrame extends JFrame{
     private final int BTN1_WIDTH = 180;
     private final int BTN1_HEIGHT = 50;
     
-    private Map<String, User> users;
-    private Map<String, Group> groups;
+    private Map<User, UserViewFrame> userViewFrameControl;
     
+    private UsersManager users;
+    private GroupManager groups;
     
     public AdminFrame(){
         super();
         this.setTitle("Mini Twitter");
         this.setBounds(100, 100, 800, 600);
         this.getContentPane().setLayout(null);   
-        users = new HashMap<String, User>();
-        groups = new HashMap<String, Group>();
+        users = new UsersManager();
+        groups = new GroupManager();
+        userViewFrameControl = new HashMap<>();
     }
     
     public void init(){
@@ -85,29 +95,26 @@ public class AdminFrame extends JFrame{
         this.getContentPane().add(addUserBtn);
         this.getContentPane().add(addGroupBtn); 
         
+        
         addUserBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if(addUserInput.getText().equals("")){
+                if(addUserInput.getText().equals("") || users.hasUser(addUserInput.getText())){
                     return;
                 }
                 User user = new User(addUserInput.getText());
-                users.put(user.getId(), user);
+                users.addUser(user);
                 addUserInput.setText("");
-//                System.out.println("added "+user.getId()+" to map");
-//                System.out.println("CurNode class "+curSelectedNode.getClass()+" is leaf: "+curSelectedNode.isLeaf());
-//                System.out.println("CurNode count"+curSelectedNode.getChildCount());
                 if(curSelectedNode.isLeaf()){
                     DefaultMutableTreeNode n = (DefaultMutableTreeNode)curSelectedNode.getParent();
                     if(n.getUserObject() instanceof Group){
-                        groups.get(n.getUserObject().toString()).add(user);
+                        groups.getGroup(n.getUserObject().toString()).add(user);
                     } 
                     user.updateTree((DefaultMutableTreeNode)curSelectedNode.getParent());
                 }
                 else{
-//                    DefaultMutableTreeNode n = (DefaultMutableTreeNode)curSelectedNode.getParent();
                     if(curSelectedNode.getUserObject() instanceof Group){
-                        groups.get(curSelectedNode.getUserObject().toString()).add(user);
+                        groups.getGroup(curSelectedNode.getUserObject().toString()).add(user);
                     }
                    user.updateTree((DefaultMutableTreeNode)curSelectedNode); 
                 }
@@ -121,10 +128,18 @@ public class AdminFrame extends JFrame{
         addGroupBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                if(addGroupInput.getText().equals("") || groups.hasGroup(addGroupInput.getText())){
+                    return;
+                }
                 Group group = new Group(addGroupInput.getText());
-                groups.put(group.getId(), group);
+                groups.addGroup(group);
                 addGroupInput.setText("");
-//                System.out.println("added "+group.getId()+" to map");
+                if(curSelectedNode.getUserObject() instanceof Group){
+                    ((Group)curSelectedNode.getUserObject()).add(group);
+                }
+                else{
+                    ((Group)((DefaultMutableTreeNode)curSelectedNode.getParent()).getUserObject()).add(group);
+                }
                 if(curSelectedNode.isLeaf()){
                     if(curSelectedNode.getParent() == null){
                         group.updateTree((DefaultMutableTreeNode)curSelectedNode);
@@ -150,7 +165,8 @@ public class AdminFrame extends JFrame{
             @Override
             public void actionPerformed(ActionEvent e) {
                 if(curSelectedNode.getUserObject() instanceof User){
-                    new UserViewFrame((User)curSelectedNode.getUserObject(), users).setVisible(true);
+                    creatUserViewFrame((User)curSelectedNode.getUserObject());
+                    
                 }  
             }
         });
@@ -177,30 +193,44 @@ public class AdminFrame extends JFrame{
         showUserTotal.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                for(Map.Entry entry : users.entrySet()){
-                    System.out.println(entry.getKey() + ", " + entry.getValue());
-                }
+                TotalUserVisitor totalUserVisitor = new TotalUserVisitor();
+                users.accept(totalUserVisitor);
+                JOptionPane.showConfirmDialog(null, totalUserVisitor.getTotal(), "Total Users", JOptionPane.PLAIN_MESSAGE);
             }
         });
-        
-        
-        
+           
         showGroupTotal.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                for(Map.Entry entry : groups.entrySet()){
-                    System.out.print(entry.getKey()+" : ");
-                    for(TreeComponents user : groups.get(entry.getKey()).getAll()){
-                        System.out.print(user+", ");
-                    }
-                    System.out.print("\n");
-                }
+                TotalGroupVisitor totalGroupVisitor = new TotalGroupVisitor();
+                groups.accept(totalGroupVisitor);
+                JOptionPane.showConfirmDialog(null, totalGroupVisitor.getTotal(), "Total Groups", JOptionPane.PLAIN_MESSAGE);
+            }
+        });
+        
+        showMessagesTotal.addActionListener(new ActionListener(){
+            @Override
+            public void actionPerformed(ActionEvent e){
+                TotalMessageVisitor totalMessageVisitor = new TotalMessageVisitor();
+                users.accept(totalMessageVisitor);
+                JOptionPane.showConfirmDialog(null, totalMessageVisitor.getTotal(), "Total Messages", JOptionPane.PLAIN_MESSAGE);
+            }
+        });
+        
+        showPositivePerc.addActionListener(new ActionListener(){
+            @Override
+            public void actionPerformed(ActionEvent e){
+                PositiveMessageVisitor positiveMessageVisitor = new PositiveMessageVisitor();
+                users.accept(positiveMessageVisitor);
+                JOptionPane.showConfirmDialog(null, String.format("%.2f", positiveMessageVisitor.getPercent()*100)+"%", "Total Messages", JOptionPane.PLAIN_MESSAGE);
             }
         });
         //Initialize Tree
         treeView = new JTree();
         treeView.setBounds(10, 10, 380, 580);
-        root = new DefaultMutableTreeNode("Root");
+        Group rootGroup = new Group("Root");
+        root = new DefaultMutableTreeNode(rootGroup);
+        groups.addGroup(rootGroup);
         root.add(new DefaultMutableTreeNode());
         treeView.setModel(new DefaultTreeModel(root));
         treeView.addTreeSelectionListener(new TreeSelectionListener() {
@@ -214,14 +244,7 @@ public class AdminFrame extends JFrame{
             }
         });
         curSelectedNode = root;
-        this.getContentPane().add(treeView);
-//        DefaultTreeCellRenderer renderer = (DefaultTreeCellRenderer) treeView.getCellRenderer();
-////        Icon closedIcon = new ImageIcon();
-//        Icon openIcon = new ImageIcon("/src/img/folder.png");
-//        Icon leafIcon = new ImageIcon("/src/img/leaf1.jpg");
-////        renderer.setClosedIcon(closedIcon);
-//        renderer.setOpenIcon(openIcon);
-//        renderer.setLeafIcon(leafIcon);    
+        this.getContentPane().add(treeView);   
     }
     
     public void expandAllNodes(JTree tree, int startingIndex, int rowCount){
@@ -234,8 +257,29 @@ public class AdminFrame extends JFrame{
         }
     }
     
-    public Map<String, User> getAllUser(){
+    public UsersManager getAllUser(){
         return users;
+    }
+    
+    public void creatUserViewFrame(User user){
+        UserViewFrame userViewFrame = new UserViewFrame((User)curSelectedNode.getUserObject(), users, this);
+        userViewFrame.setVisible(true);
+        userViewFrameControl.put((User)curSelectedNode.getUserObject(), userViewFrame);
+    }
+    
+    public void refreshUserFrame(User user){
+        if(userViewFrameControl.containsKey(user)){
+            userViewFrameControl.get(user).refreshFeeds();
+        }
+    }
+    
+    public void refreshUsersFrame(List<Observer> users){
+        for(Observer user : users){
+            User follower = (User)user;
+            if(userViewFrameControl.containsKey(follower)){
+                userViewFrameControl.get(follower).refreshFeeds();
+            }
+        }
     }
     
 }

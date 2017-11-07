@@ -6,7 +6,10 @@
 package minitwitter.observerpattern;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.MutableTreeNode;
 import minitwitter.compositepattern.Group;
@@ -16,23 +19,66 @@ import minitwitter.compositepattern.TreeComponents;
  *
  * @author andyliang
  */
+
+//Apply Observer Pattern: User is both the subject and observer in observer pattern.
+//Apply Composite Pattern: User is a TreeComponent
 public class User extends Subject implements Observer, TreeComponents{
     private String id;
+    //holds user's own twits
+    private List<String> ownTwits;
+    //holds tweets include self and following users
+    private List<String> allTwits;
+    //holds list of following users
+    private Set<String> following;
     
     public User(){
         id = this.toString();
+        allTwits = new LinkedList<>();
+        ownTwits = new LinkedList<>();
+        following = new HashSet<>();
     }
     
     public User(String name){
         id = name;
+        allTwits = new LinkedList<>();
+        ownTwits = new LinkedList<>();
+        following = new HashSet<>();
     }
     
     public String getId(){
         return id;
     }
     
+    public void addFollowing(String userId){
+        following.add(userId);
+    }
+    
+    public Set<String> getFollowing(){
+        return following;
+    }
+    
     public List<Observer> getFollower(){
         return followers;
+    }
+    
+    public void addTwit(String message){
+        this.allTwits.add(0, message);
+    }
+    
+    public List<String> getAllTwit(){
+        return allTwits;
+    }
+    
+    public void addOwnTwit(String message){
+        this.ownTwits.add(0, message);
+    }
+    
+    public List<String> getOwnTwits(){
+        return ownTwits;
+    }
+    
+    public String getLatestTwit(){
+        return allTwits.get(0);
     }
     
     @Override
@@ -57,14 +103,7 @@ public class User extends Subject implements Observer, TreeComponents{
     @Override
     public void update(Subject subject) {
         if(subject instanceof User){
-            System.out.println(id+"got updates from : "+((User) subject).getId() );
+            addTwit(((User) subject).getLatestTwit());
         }
     }
-
-//    @Override
-//    public void update() {
-//        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-//    }
-
-    
 }

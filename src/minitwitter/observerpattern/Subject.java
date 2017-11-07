@@ -12,6 +12,7 @@ import java.util.List;
  *
  * @author andyliang
  */
+
 public abstract class Subject {
     List<Observer> followers = new ArrayList<Observer>();
 
