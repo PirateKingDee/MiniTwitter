@@ -40,7 +40,6 @@ public class PositiveMessageVisitor implements MiniTwitterElementVisitor{
                         totalGoodMessage++;
                         break;
                     }
-                    System.out.println("bad !");
                 }
             }
         }

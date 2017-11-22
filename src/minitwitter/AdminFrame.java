@@ -30,11 +30,15 @@ import minitwitter.compositepattern.TreeComponents;
 import minitwitter.observerpattern.Observer;
 import minitwitter.observerpattern.User;
 import minitwitter.visitorpattern.GroupManager;
+import minitwitter.visitorpattern.LastUpdateUserVisitor;
+import minitwitter.visitorpattern.MiniTwitterElementVisitor;
 import minitwitter.visitorpattern.PositiveMessageVisitor;
 import minitwitter.visitorpattern.TotalGroupVisitor;
 import minitwitter.visitorpattern.TotalMessageVisitor;
 import minitwitter.visitorpattern.TotalUserVisitor;
 import minitwitter.visitorpattern.UsersManager;
+import minitwitter.visitorpattern.VerifyGroupIdVisitor;
+import minitwitter.visitorpattern.VerifyUserIdVisitor;
 
 /**
  *
@@ -56,6 +60,8 @@ public class AdminFrame extends JFrame{
     private JTree treeView;
     private DefaultMutableTreeNode root;
     private DefaultMutableTreeNode curSelectedNode;
+    private JButton verifyIdBtn;
+    private JButton lastUpdateUserBtn;
     
     private final int BTN1_WIDTH = 180;
     private final int BTN1_HEIGHT = 50;
@@ -118,7 +124,6 @@ public class AdminFrame extends JFrame{
                     }
                    user.updateTree((DefaultMutableTreeNode)curSelectedNode); 
                 }
-                System.out.println("added"+ user);
                 DefaultTreeModel model = (DefaultTreeModel)treeView.getModel();
                 model.reload();
                 expandAllNodes(treeView, 0, treeView.getRowCount());
@@ -245,6 +250,9 @@ public class AdminFrame extends JFrame{
         });
         curSelectedNode = root;
         this.getContentPane().add(treeView);   
+        
+        initVerifyIdButton();
+        initLastUpdateButton();
     }
     
     public void expandAllNodes(JTree tree, int startingIndex, int rowCount){
@@ -270,16 +278,61 @@ public class AdminFrame extends JFrame{
     public void refreshUserFrame(User user){
         if(userViewFrameControl.containsKey(user)){
             userViewFrameControl.get(user).refreshFeeds();
+            userViewFrameControl.get(user).updateLastUpdateTime(new TimeManagement().formatCreationTime(user.getLastUpdateTime()));   
         }
     }
     
     public void refreshUsersFrame(List<Observer> users){
         for(Observer user : users){
             User follower = (User)user;
-            if(userViewFrameControl.containsKey(follower)){
-                userViewFrameControl.get(follower).refreshFeeds();
-            }
+//            if(userViewFrameControl.containsKey(follower)){
+//                userViewFrameControl.get(follower).refreshFeeds();
+//                userViewFrameControl.get(follower).updateLastUpdateTime(new TimeManagement().formatCreationTime(WIDTH));
+//            }
+            refreshUserFrame(follower);
         }
+    }
+    
+    private void initVerifyIdButton(){
+        verifyIdBtn = new JButton();
+        verifyIdBtn.setBounds(400, 300, BTN1_WIDTH, BTN1_HEIGHT);
+        verifyIdBtn.setText("Verify Ids");
+        this.getContentPane().add(verifyIdBtn);
+        verifyIdBtn.addActionListener(new ActionListener(){
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                MiniTwitterElementVisitor verifyUserIdVisitor = new VerifyUserIdVisitor();
+                MiniTwitterElementVisitor verifyGroupIdVisitor = new VerifyGroupIdVisitor();
+                String uniqueResult = "";
+                users.accept(verifyUserIdVisitor);
+                groups.accept(verifyGroupIdVisitor);
+                if(((VerifyUserIdVisitor) verifyUserIdVisitor).isUnique() && ((VerifyGroupIdVisitor) verifyGroupIdVisitor).isUnique()){
+                    uniqueResult = "All Unique";
+                }
+                else{
+                    uniqueResult = "Not Unique";
+                }
+                JOptionPane.showConfirmDialog(null, uniqueResult, "User and Group ID verification", JOptionPane.PLAIN_MESSAGE);
+            }
+        });
+    }
+    
+    private void initLastUpdateButton(){
+        lastUpdateUserBtn = new JButton();
+        lastUpdateUserBtn.setBounds(600, 300, BTN1_WIDTH, BTN1_HEIGHT);
+        lastUpdateUserBtn.setText("Last Update User");
+        this.getContentPane().add(lastUpdateUserBtn);
+        lastUpdateUserBtn.addActionListener(new ActionListener(){
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                MiniTwitterElementVisitor lastUpdateUserVisitor = new LastUpdateUserVisitor();
+                users.accept(lastUpdateUserVisitor);
+                if(((LastUpdateUserVisitor)lastUpdateUserVisitor).lastUpdateUser() != null){
+                    JOptionPane.showConfirmDialog(null, ((LastUpdateUserVisitor)lastUpdateUserVisitor).lastUpdateUser().getId() , "Last Updated User", JOptionPane.PLAIN_MESSAGE);
+                }
+                
+            }
+        });
     }
     
 }

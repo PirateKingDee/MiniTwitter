@@ -7,11 +7,15 @@ package minitwitter;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JTextField;
 import minitwitter.observerpattern.Observer;
@@ -29,6 +33,8 @@ public class UserViewFrame extends JFrame{
     private JTextField tweetInput;
     private JButton postBtn;
     private JList<String> feedsLv;
+    private JLabel creationTimeLabel;
+    private JLabel lastUpdateTimeLabel;
    
     private User user;
     private UsersManager allUser;
@@ -57,6 +63,8 @@ public class UserViewFrame extends JFrame{
         initTweetInput();
         initPostBtn();
         initFeedsLv();
+        initCreationTimeLabel(new TimeManagement().formatCreationTime(user.getCreationTime()));
+        initLastUpdateLabel("");
     }
     
     public void initUserIdInput(){
@@ -92,7 +100,7 @@ public class UserViewFrame extends JFrame{
     public void initFollowingLv(){
         followListModel = new DefaultListModel();
         followingLv = new JList<String>();
-        followingLv.setBounds(10, 70, 370, 240);        
+        followingLv.setBounds(10, 110, 370, 200);        
         followingLv.setModel(followListModel);
         updateFollowListView();
         this.getContentPane().add(followingLv);
@@ -120,9 +128,11 @@ public class UserViewFrame extends JFrame{
                 user.addTwit(tweet);
                 user.addOwnTwit(tweet);
                 user.notifyObserver();
+                user.updateLastUpdateTime();
                 addToFeedsListView(tweet);
                 adminFrame.refreshUsersFrame(user.getFollower());
                 tweetInput.setText("");
+                updateLastUpdateTime(new TimeManagement().formatCreationTime(user.getLastUpdateTime()));
             }
         });
     }
@@ -130,7 +140,7 @@ public class UserViewFrame extends JFrame{
     public void initFeedsLv(){
         tweetListModel = new DefaultListModel();
         feedsLv = new JList<String>();
-        feedsLv.setBounds(10, 380, 370, 180);
+        feedsLv.setBounds(10, 420, 370, 140);
         feedsLv.setModel(tweetListModel);
         updateFeedsListView();
         this.getContentPane().add(feedsLv);
@@ -159,5 +169,24 @@ public class UserViewFrame extends JFrame{
     public void refreshFeeds(){
         tweetListModel.clear();
         updateFeedsListView();
-    }       
+    } 
+    
+    public void updateLastUpdateTime(String lastUpdateTime){
+        lastUpdateTimeLabel.setText(lastUpdateTime);
+    }
+    
+    private void initCreationTimeLabel(String creationTime){
+        creationTimeLabel = new JLabel();
+        creationTimeLabel.setBounds(10, 70, 380, 30);
+        creationTimeLabel.setText("User Creation Time: " + creationTime);
+        this.getContentPane().add(creationTimeLabel);
+    }
+    
+    private void initLastUpdateLabel(String lastUpdateTime){
+        lastUpdateTimeLabel = new JLabel();
+        lastUpdateTimeLabel.setBounds(10, 380, 380, 30);
+        lastUpdateTimeLabel.setText("Last Update: " + lastUpdateTime);
+        this.getContentPane().add(lastUpdateTimeLabel);
+    }
+    
 }

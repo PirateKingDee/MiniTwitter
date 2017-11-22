@@ -31,11 +31,15 @@ public class User extends Subject implements Observer, TreeComponents{
     //holds list of following users
     private Set<String> following;
     
+    private long creationTime;
+    private long lastUpdateTime;
+    
     public User(){
         id = this.toString();
         allTwits = new LinkedList<>();
         ownTwits = new LinkedList<>();
         following = new HashSet<>();
+        creationTime = System.currentTimeMillis();
     }
     
     public User(String name){
@@ -43,6 +47,7 @@ public class User extends Subject implements Observer, TreeComponents{
         allTwits = new LinkedList<>();
         ownTwits = new LinkedList<>();
         following = new HashSet<>();
+        creationTime = System.currentTimeMillis();
     }
     
     public String getId(){
@@ -81,16 +86,27 @@ public class User extends Subject implements Observer, TreeComponents{
         return allTwits.get(0);
     }
     
+    public long getCreationTime(){
+        return creationTime;
+    }
+    
     @Override
     public String toString(){
         return id;
+    }
+    
+    public void updateLastUpdateTime(){
+        lastUpdateTime = System.currentTimeMillis();
+    }
+    
+    public long getLastUpdateTime(){
+        return lastUpdateTime;
     }
     
     @Override
     public void updateTree(DefaultMutableTreeNode node){
         if(node.getUserObject() instanceof Group){
             DefaultMutableTreeNode child = (DefaultMutableTreeNode)node.getFirstChild();
-            System.out.println(child.getUserObject() == null);
             if(child.getUserObject() == null){
                 node.remove(0);
             }
@@ -103,6 +119,7 @@ public class User extends Subject implements Observer, TreeComponents{
     @Override
     public void update(Subject subject) {
         if(subject instanceof User){
+            updateLastUpdateTime();
             addTwit(((User) subject).getLatestTwit());
         }
     }

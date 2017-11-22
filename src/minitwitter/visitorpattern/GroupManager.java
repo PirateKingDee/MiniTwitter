@@ -46,6 +46,10 @@ public class GroupManager implements MiniTwitterElement {
     public int getSize(){
         return counter;
     }
+    
+    public Map<String, Group> getAllGroups(){
+        return groups;
+    }
 
     @Override
     public void accept(MiniTwitterElementVisitor visitor) {
