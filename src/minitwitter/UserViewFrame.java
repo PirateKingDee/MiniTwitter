@@ -12,6 +12,7 @@ import java.util.Map;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JTextField;
 import minitwitter.observerpattern.Observer;
@@ -29,6 +30,7 @@ public class UserViewFrame extends JFrame{
     private JTextField tweetInput;
     private JButton postBtn;
     private JList<String> feedsLv;
+    private JLabel creationTimeLabel;
    
     private User user;
     private UsersManager allUser;
@@ -159,5 +161,10 @@ public class UserViewFrame extends JFrame{
     public void refreshFeeds(){
         tweetListModel.clear();
         updateFeedsListView();
-    }       
+    }    
+    
+    private void initCreationTimeLabel(){
+        creationTimeLabel = new JLabel();
+        
+    }
 }

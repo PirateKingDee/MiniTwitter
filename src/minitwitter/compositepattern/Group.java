@@ -18,15 +18,18 @@ import javax.swing.tree.DefaultMutableTreeNode;
 public class Group implements TreeComponents{
     private String id;
     private List<TreeComponents> list;
+    private long creationTime;
     
     public Group(){
         id = this.toString();
         list = new ArrayList<TreeComponents>();
+        creationTime = System.currentTimeMillis();
     }
     
     public Group(String id){
         this.id = id;
         list = new ArrayList<TreeComponents>();
+        creationTime = System.currentTimeMillis();
     }
     
     public void add(TreeComponents component){
@@ -43,6 +46,10 @@ public class Group implements TreeComponents{
     
     public String toString(){
         return id;
+    }
+    
+    public long getCreationTime(){
+        return creationTime;
     }
 
     @Override

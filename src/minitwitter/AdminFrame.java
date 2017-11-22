@@ -30,11 +30,14 @@ import minitwitter.compositepattern.TreeComponents;
 import minitwitter.observerpattern.Observer;
 import minitwitter.observerpattern.User;
 import minitwitter.visitorpattern.GroupManager;
+import minitwitter.visitorpattern.MiniTwitterElementVisitor;
 import minitwitter.visitorpattern.PositiveMessageVisitor;
 import minitwitter.visitorpattern.TotalGroupVisitor;
 import minitwitter.visitorpattern.TotalMessageVisitor;
 import minitwitter.visitorpattern.TotalUserVisitor;
 import minitwitter.visitorpattern.UsersManager;
+import minitwitter.visitorpattern.VerifyGroupIdVisitor;
+import minitwitter.visitorpattern.VerifyUserIdVisitor;
 
 /**
  *
@@ -56,6 +59,7 @@ public class AdminFrame extends JFrame{
     private JTree treeView;
     private DefaultMutableTreeNode root;
     private DefaultMutableTreeNode curSelectedNode;
+    private JButton verifyIdBtn;
     
     private final int BTN1_WIDTH = 180;
     private final int BTN1_HEIGHT = 50;
@@ -245,6 +249,8 @@ public class AdminFrame extends JFrame{
         });
         curSelectedNode = root;
         this.getContentPane().add(treeView);   
+        
+        createVerifyIdButton();
     }
     
     public void expandAllNodes(JTree tree, int startingIndex, int rowCount){
@@ -280,6 +286,30 @@ public class AdminFrame extends JFrame{
                 userViewFrameControl.get(follower).refreshFeeds();
             }
         }
+    }
+    
+    private void createVerifyIdButton(){
+        verifyIdBtn = new JButton();
+        verifyIdBtn.setBounds(500, 300, BTN1_WIDTH, BTN1_HEIGHT);
+        verifyIdBtn.setText("Verify Ids");
+        this.getContentPane().add(verifyIdBtn);
+        verifyIdBtn.addActionListener(new ActionListener(){
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                MiniTwitterElementVisitor verifyUserIdVisitor = new VerifyUserIdVisitor();
+                MiniTwitterElementVisitor verifyGroupIdVisitor = new VerifyGroupIdVisitor();
+                String uniqueResult = "";
+                users.accept(verifyUserIdVisitor);
+                groups.accept(verifyGroupIdVisitor);
+                if(((VerifyUserIdVisitor) verifyUserIdVisitor).isUnique() && ((VerifyGroupIdVisitor) verifyGroupIdVisitor).isUnique()){
+                    uniqueResult = "All Unique";
+                }
+                else{
+                    uniqueResult = "Not Unique";
+                }
+                JOptionPane.showConfirmDialog(null, uniqueResult, "User and Group ID verification", JOptionPane.PLAIN_MESSAGE);
+            }
+        });
     }
     
 }

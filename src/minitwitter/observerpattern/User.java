@@ -31,11 +31,14 @@ public class User extends Subject implements Observer, TreeComponents{
     //holds list of following users
     private Set<String> following;
     
+    private long creationTime;
+    
     public User(){
         id = this.toString();
         allTwits = new LinkedList<>();
         ownTwits = new LinkedList<>();
         following = new HashSet<>();
+        creationTime = System.currentTimeMillis();
     }
     
     public User(String name){
@@ -43,6 +46,7 @@ public class User extends Subject implements Observer, TreeComponents{
         allTwits = new LinkedList<>();
         ownTwits = new LinkedList<>();
         following = new HashSet<>();
+        creationTime = System.currentTimeMillis();
     }
     
     public String getId(){
@@ -79,6 +83,10 @@ public class User extends Subject implements Observer, TreeComponents{
     
     public String getLatestTwit(){
         return allTwits.get(0);
+    }
+    
+    public long getCreationTime(){
+        return creationTime;
     }
     
     @Override
