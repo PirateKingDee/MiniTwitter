@@ -34,6 +34,7 @@ public class UserViewFrame extends JFrame{
     private JButton postBtn;
     private JList<String> feedsLv;
     private JLabel creationTimeLabel;
+    private JLabel lastUpdateTimeLabel;
    
     private User user;
     private UsersManager allUser;
@@ -63,6 +64,7 @@ public class UserViewFrame extends JFrame{
         initPostBtn();
         initFeedsLv();
         initCreationTimeLabel(new TimeManagement().formatCreationTime(user.getCreationTime()));
+        initLastUpdateLabel("");
     }
     
     public void initUserIdInput(){
@@ -126,9 +128,11 @@ public class UserViewFrame extends JFrame{
                 user.addTwit(tweet);
                 user.addOwnTwit(tweet);
                 user.notifyObserver();
+                user.updateLastUpdateTime();
                 addToFeedsListView(tweet);
                 adminFrame.refreshUsersFrame(user.getFollower());
                 tweetInput.setText("");
+                updateLastUpdateTime(new TimeManagement().formatCreationTime(user.getLastUpdateTime()));
             }
         });
     }
@@ -136,7 +140,7 @@ public class UserViewFrame extends JFrame{
     public void initFeedsLv(){
         tweetListModel = new DefaultListModel();
         feedsLv = new JList<String>();
-        feedsLv.setBounds(10, 380, 370, 180);
+        feedsLv.setBounds(10, 420, 370, 140);
         feedsLv.setModel(tweetListModel);
         updateFeedsListView();
         this.getContentPane().add(feedsLv);
@@ -165,13 +169,24 @@ public class UserViewFrame extends JFrame{
     public void refreshFeeds(){
         tweetListModel.clear();
         updateFeedsListView();
-    }    
+    } 
+    
+    public void updateLastUpdateTime(String lastUpdateTime){
+        lastUpdateTimeLabel.setText(lastUpdateTime);
+    }
     
     private void initCreationTimeLabel(String creationTime){
         creationTimeLabel = new JLabel();
         creationTimeLabel.setBounds(10, 70, 380, 30);
-        creationTimeLabel.setText(creationTime);
+        creationTimeLabel.setText("User Creation Time: " + creationTime);
         this.getContentPane().add(creationTimeLabel);
+    }
+    
+    private void initLastUpdateLabel(String lastUpdateTime){
+        lastUpdateTimeLabel = new JLabel();
+        lastUpdateTimeLabel.setBounds(10, 380, 380, 30);
+        lastUpdateTimeLabel.setText("Last Update: " + lastUpdateTime);
+        this.getContentPane().add(lastUpdateTimeLabel);
     }
     
 }

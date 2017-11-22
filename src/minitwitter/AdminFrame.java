@@ -276,15 +276,18 @@ public class AdminFrame extends JFrame{
     public void refreshUserFrame(User user){
         if(userViewFrameControl.containsKey(user)){
             userViewFrameControl.get(user).refreshFeeds();
+            userViewFrameControl.get(user).updateLastUpdateTime(new TimeManagement().formatCreationTime(user.getLastUpdateTime()));   
         }
     }
     
     public void refreshUsersFrame(List<Observer> users){
         for(Observer user : users){
             User follower = (User)user;
-            if(userViewFrameControl.containsKey(follower)){
-                userViewFrameControl.get(follower).refreshFeeds();
-            }
+//            if(userViewFrameControl.containsKey(follower)){
+//                userViewFrameControl.get(follower).refreshFeeds();
+//                userViewFrameControl.get(follower).updateLastUpdateTime(new TimeManagement().formatCreationTime(WIDTH));
+//            }
+            refreshUserFrame(follower);
         }
     }
     

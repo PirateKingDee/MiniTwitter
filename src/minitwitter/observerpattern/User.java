@@ -32,6 +32,7 @@ public class User extends Subject implements Observer, TreeComponents{
     private Set<String> following;
     
     private long creationTime;
+    private long lastUpdateTime;
     
     public User(){
         id = this.toString();
@@ -94,6 +95,14 @@ public class User extends Subject implements Observer, TreeComponents{
         return id;
     }
     
+    public void updateLastUpdateTime(){
+        lastUpdateTime = System.currentTimeMillis();
+    }
+    
+    public long getLastUpdateTime(){
+        return lastUpdateTime;
+    }
+    
     @Override
     public void updateTree(DefaultMutableTreeNode node){
         if(node.getUserObject() instanceof Group){
@@ -111,6 +120,7 @@ public class User extends Subject implements Observer, TreeComponents{
     @Override
     public void update(Subject subject) {
         if(subject instanceof User){
+            updateLastUpdateTime();
             addTwit(((User) subject).getLatestTwit());
         }
     }
