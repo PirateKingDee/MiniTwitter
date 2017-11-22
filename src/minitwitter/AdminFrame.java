@@ -124,7 +124,6 @@ public class AdminFrame extends JFrame{
                     }
                    user.updateTree((DefaultMutableTreeNode)curSelectedNode); 
                 }
-                System.out.println("added"+ user);
                 DefaultTreeModel model = (DefaultTreeModel)treeView.getModel();
                 model.reload();
                 expandAllNodes(treeView, 0, treeView.getRowCount());

@@ -107,7 +107,6 @@ public class User extends Subject implements Observer, TreeComponents{
     public void updateTree(DefaultMutableTreeNode node){
         if(node.getUserObject() instanceof Group){
             DefaultMutableTreeNode child = (DefaultMutableTreeNode)node.getFirstChild();
-            System.out.println(child.getUserObject() == null);
             if(child.getUserObject() == null){
                 node.remove(0);
             }
