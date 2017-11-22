@@ -7,8 +7,11 @@ package minitwitter;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -59,6 +62,7 @@ public class UserViewFrame extends JFrame{
         initTweetInput();
         initPostBtn();
         initFeedsLv();
+        initCreationTimeLabel(new TimeManagement().formatCreationTime(user.getCreationTime()));
     }
     
     public void initUserIdInput(){
@@ -94,7 +98,7 @@ public class UserViewFrame extends JFrame{
     public void initFollowingLv(){
         followListModel = new DefaultListModel();
         followingLv = new JList<String>();
-        followingLv.setBounds(10, 70, 370, 240);        
+        followingLv.setBounds(10, 110, 370, 200);        
         followingLv.setModel(followListModel);
         updateFollowListView();
         this.getContentPane().add(followingLv);
@@ -163,8 +167,11 @@ public class UserViewFrame extends JFrame{
         updateFeedsListView();
     }    
     
-    private void initCreationTimeLabel(){
+    private void initCreationTimeLabel(String creationTime){
         creationTimeLabel = new JLabel();
-        
+        creationTimeLabel.setBounds(10, 70, 380, 30);
+        creationTimeLabel.setText(creationTime);
+        this.getContentPane().add(creationTimeLabel);
     }
+    
 }
