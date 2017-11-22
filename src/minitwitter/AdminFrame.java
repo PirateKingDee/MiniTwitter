@@ -30,6 +30,7 @@ import minitwitter.compositepattern.TreeComponents;
 import minitwitter.observerpattern.Observer;
 import minitwitter.observerpattern.User;
 import minitwitter.visitorpattern.GroupManager;
+import minitwitter.visitorpattern.LastUpdateUserVisitor;
 import minitwitter.visitorpattern.MiniTwitterElementVisitor;
 import minitwitter.visitorpattern.PositiveMessageVisitor;
 import minitwitter.visitorpattern.TotalGroupVisitor;
@@ -60,6 +61,7 @@ public class AdminFrame extends JFrame{
     private DefaultMutableTreeNode root;
     private DefaultMutableTreeNode curSelectedNode;
     private JButton verifyIdBtn;
+    private JButton lastUpdateUserBtn;
     
     private final int BTN1_WIDTH = 180;
     private final int BTN1_HEIGHT = 50;
@@ -250,7 +252,8 @@ public class AdminFrame extends JFrame{
         curSelectedNode = root;
         this.getContentPane().add(treeView);   
         
-        createVerifyIdButton();
+        initVerifyIdButton();
+        initLastUpdateButton();
     }
     
     public void expandAllNodes(JTree tree, int startingIndex, int rowCount){
@@ -291,9 +294,9 @@ public class AdminFrame extends JFrame{
         }
     }
     
-    private void createVerifyIdButton(){
+    private void initVerifyIdButton(){
         verifyIdBtn = new JButton();
-        verifyIdBtn.setBounds(500, 300, BTN1_WIDTH, BTN1_HEIGHT);
+        verifyIdBtn.setBounds(400, 300, BTN1_WIDTH, BTN1_HEIGHT);
         verifyIdBtn.setText("Verify Ids");
         this.getContentPane().add(verifyIdBtn);
         verifyIdBtn.addActionListener(new ActionListener(){
@@ -311,6 +314,24 @@ public class AdminFrame extends JFrame{
                     uniqueResult = "Not Unique";
                 }
                 JOptionPane.showConfirmDialog(null, uniqueResult, "User and Group ID verification", JOptionPane.PLAIN_MESSAGE);
+            }
+        });
+    }
+    
+    private void initLastUpdateButton(){
+        lastUpdateUserBtn = new JButton();
+        lastUpdateUserBtn.setBounds(600, 300, BTN1_WIDTH, BTN1_HEIGHT);
+        lastUpdateUserBtn.setText("Last Update User");
+        this.getContentPane().add(lastUpdateUserBtn);
+        lastUpdateUserBtn.addActionListener(new ActionListener(){
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                MiniTwitterElementVisitor lastUpdateUserVisitor = new LastUpdateUserVisitor();
+                users.accept(lastUpdateUserVisitor);
+                if(((LastUpdateUserVisitor)lastUpdateUserVisitor).lastUpdateUser() != null){
+                    JOptionPane.showConfirmDialog(null, ((LastUpdateUserVisitor)lastUpdateUserVisitor).lastUpdateUser().getId() , "Last Updated User", JOptionPane.PLAIN_MESSAGE);
+                }
+                
             }
         });
     }
